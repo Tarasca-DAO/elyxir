@@ -152,16 +152,12 @@ const ElyxirEmbeddedPage = () => {
                 const [balances, accountAssets] = await Promise.all([
                     provider.getBalances().catch(() => null),
                     getAccountAssets(session.accountRS).catch(() => null),
-                    dispatch(fetchItems({ accountRs: session.accountRS })),
-                    dispatch(fetchAllElyxirData()),
-                    dispatch(getBlockchainBlocks()),
                 ]);
 
                 if (cancelled) return;
 
                 const assets = mapAssets(accountAssets, balances);
-
-                setInfoAccount({
+                const embeddedInfoAccount = {
                     isEmbedded: true,
                     token: null,
                     accountRs: session.accountRS,
@@ -179,7 +175,17 @@ const ElyxirEmbeddedPage = () => {
                     currentAsks: [],
                     currentBids: [],
                     trades: [],
-                });
+                };
+
+                await Promise.all([
+                    dispatch(fetchItems({ accountRs: session.accountRS })),
+                    dispatch(fetchAllElyxirData({ infoAccount: embeddedInfoAccount })),
+                    dispatch(getBlockchainBlocks()),
+                ]);
+
+                if (cancelled) return;
+
+                setInfoAccount(embeddedInfoAccount);
                 setStatus('ready');
             } catch (err) {
                 if (cancelled) return;

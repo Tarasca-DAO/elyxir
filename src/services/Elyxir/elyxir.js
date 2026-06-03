@@ -63,29 +63,46 @@ export const getUserJobs = async ({ accountId }) => {
  * @description Sends all required assets for potion crafting to the crafting contract.
  * @param {Object[]} mergedAssets - Array of assets to transfer with quantities.
  * @param {string} passphrase - The user's passphrase for transaction signing.
+ * @param {Object} walletProvider - Optional Play Hub wallet provider for embedded signing.
  * @returns {Promise<boolean>} Returns true if all transfers succeed, false otherwise.
  * @author Dario Maza - Unknown Gravity | All-in-one Blockchain Company.
  */
-export const sendCraftPotionAssets = async ({ mergedAssets = [], passphrase }) => {
+export const sendCraftPotionAssets = async ({ mergedAssets = [], passphrase, walletProvider }) => {
     try {
         if (!mergedAssets.length) return false;
+        if (!walletProvider && !passphrase) return false;
 
-        await Promise.all(
-            mergedAssets.map(({ asset, qnt }) =>
-                transferAsset({
+        const message = JSON.stringify({ contract: OMNO_CONTRACT });
+
+        const responses = await Promise.all(
+            mergedAssets.map(({ asset, qnt }) => {
+                if (walletProvider) {
+                    return walletProvider.transferAsset({
+                        recipientRS: OMNO_ACCOUNT,
+                        amount: {
+                            assetId: asset,
+                            quantityQNT: qnt,
+                        },
+                        message,
+                        prunable: true,
+                        priority: 'HIGH',
+                    });
+                }
+
+                return transferAsset({
                     asset,
                     quantityQNT: qnt,
-                    message: JSON.stringify({ contract: OMNO_CONTRACT }),
+                    message,
                     recipient: OMNO_ACCOUNT,
                     passPhrase: passphrase,
                     messagePrunable: true,
                     deadline: 361,
                     priority: 'HIGH',
-                })
-            )
+                });
+            })
         );
 
-        return true;
+        return responses.every(Boolean);
     } catch (error) {
         console.error('🚀 ~ sendCraftPotionAssets ~ error:', error);
         return false;
@@ -102,6 +119,7 @@ export const sendCraftPotionAssets = async ({ mergedAssets = [], passphrase }) =
  * @param {string} params.flaskAssetId - The flask asset ID required for the craft.
  * @param {number} params.durationBlocks - Duration of the crafting process in blocks.
  * @param {string} params.passphrase - The sender's account passphrase.
+ * @param {Object} params.walletProvider - Optional Play Hub wallet provider for embedded signing.
  * @returns {Promise<void>} Resolves when all transfers are completed.
  * @author Dario Maza - Unknown Gravity | All-in-one Blockchain Company.
  */
@@ -112,9 +130,12 @@ export const sendCraftPotionMessage = async ({
     flaskAssetId,
     durationBlocks,
     passphrase,
+    walletProvider,
     blockId,
 }) => {
     try {
+        if (!walletProvider && !passphrase) return false;
+
         const jobId = uuid();
 
         const message = getCraftPotionMessage({
@@ -127,6 +148,15 @@ export const sendCraftPotionMessage = async ({
             testMode: true,
             blockId,
         });
+
+        if (walletProvider) {
+            return await walletProvider.sendMessage({
+                recipientRS: OMNO_ACCOUNT,
+                message,
+                prunable: true,
+                priority: 'HIGH',
+            });
+        }
 
         return await sendMessage({ recipient: OMNO_ACCOUNT, message, passPhrase: passphrase });
     } catch (error) {

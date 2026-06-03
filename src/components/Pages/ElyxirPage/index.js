@@ -26,7 +26,7 @@ import { addressToAccountId } from '../../../services/Ardor/ardorInterface';
 import { useSelector } from 'react-redux';
 import { DURATION_OPTIONS } from './data';
 
-const Elyxir = ({ infoAccount }) => {
+const Elyxir = ({ infoAccount, walletProvider = null, embedded = false }) => {
     const { elyxir, fakeAssets } = useSelector(state => state.elyxir);
     const { prev_height } = useSelector(state => state.blockchain);
 
@@ -43,6 +43,8 @@ const Elyxir = ({ infoAccount }) => {
     const [pendingAction, setPendingAction] = useState(null);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const toast = useToast();
+    const isEmbeddedMode = Boolean(embedded);
+    const usesEmbeddedWallet = Boolean(isEmbeddedMode && walletProvider);
 
     const sectionBg = useColorModeValue('gray.50', 'gray.800');
 
@@ -103,7 +105,7 @@ const Elyxir = ({ infoAccount }) => {
                 setShowPinInput(false);
 
                 if (pendingAction === 'craft') {
-                    executeCrafting(userAccount.passphrase);
+                    executeCrafting({ passphrase: userAccount.passphrase });
                 }
             } catch (error) {
                 toast({
@@ -137,16 +139,32 @@ const Elyxir = ({ infoAccount }) => {
 
         onClose();
 
+        if (isEmbeddedMode) {
+            if (!usesEmbeddedWallet) {
+                toast({
+                    title: 'Wallet connection unavailable',
+                    description: 'Reopen Elyxir from Play Hub with an unlocked wallet.',
+                    status: 'error',
+                    duration: 5000,
+                    isClosable: true,
+                });
+                return;
+            }
+
+            await executeCrafting({ walletProvider });
+            return;
+        }
+
         if (!userPassphrase) {
             requestPinForAction('craft');
             return;
         }
 
-        await executeCrafting(userPassphrase);
-    }, [selectedRecipe, infoAccount, onClose, toast, userPassphrase, requestPinForAction]);
+        await executeCrafting({ passphrase: userPassphrase });
+    }, [selectedRecipe, infoAccount, onClose, toast, isEmbeddedMode, usesEmbeddedWallet, walletProvider, userPassphrase, requestPinForAction]);
 
     const executeCrafting = useCallback(
-        async passphrase => {
+        async ({ passphrase, walletProvider: craftingWalletProvider } = {}) => {
             setIsLoading(true);
 
             try {
@@ -171,8 +189,9 @@ const Elyxir = ({ infoAccount }) => {
                 });
 
                 const durationBlocks = DURATION_OPTIONS.find(item => item.days === craftDuration).blocks;
+                const signingStrategy = craftingWalletProvider ? { walletProvider: craftingWalletProvider } : { passphrase };
 
-                const transfered = await sendCraftPotionAssets({ mergedAssets, passphrase });
+                const transfered = await sendCraftPotionAssets({ mergedAssets, ...signingStrategy });
                 if (!transfered) throw new Error('Failed transfering crafting asset');
 
                 const response = await sendCraftPotionMessage({
@@ -181,7 +200,7 @@ const Elyxir = ({ infoAccount }) => {
                     creationAssetId: recipePotion?.asset,
                     flaskAssetId: selectedFlask?.asset,
                     durationBlocks,
-                    passphrase,
+                    ...signingStrategy,
                     blockId: prev_height,
                 });
 
@@ -210,7 +229,7 @@ const Elyxir = ({ infoAccount }) => {
                 setPendingAction(null);
             }
         },
-        [selectedRecipe, craftingAmount, infoAccount, toast]
+        [selectedRecipe, selectedFlask, craftDuration, craftingAmount, fakeAssets.potions, infoAccount, prev_height, toast]
     );
 
     const getMissingItems = useCallback(
@@ -311,7 +330,9 @@ const Elyxir = ({ infoAccount }) => {
                 isLoading={isLoading}
                 selectedFlask={selectedFlask}
             />
-            <PinModal showPinInput={showPinInput} setShowPinInput={setShowPinInput} handlePinInput={handlePinInput} />
+            {!isEmbeddedMode && (
+                <PinModal showPinInput={showPinInput} setShowPinInput={setShowPinInput} handlePinInput={handlePinInput} />
+            )}
         </Box>
     );
 };
