@@ -105,7 +105,7 @@ export const fetchFakeAssets = createAsyncThunk(
                     quantityQNT: realQuantity,
                     totalQuantityQNT: 1,
                     unconfirmedQuantityQNT: realUnconfirmedQuantity,
-                    imgUrl: `/images/elyxir/potions/${potion.image}`,
+                    imgUrl: `/images/elyxir/outputs/${potion.image}`,
                     elyxirType: 'CREATION',
                     isFake: true,
                 };

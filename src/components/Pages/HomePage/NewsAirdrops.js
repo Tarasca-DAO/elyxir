@@ -17,15 +17,21 @@ import {
 } from '@chakra-ui/react';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 
-const NewsAirdrops = () => {
+const NewsAirdrops = ({ variant = 'default' }) => {
     const [typeFilter, setTypeFilter] = useState('all');
     const [chainFilter, setChainFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
     const [claimFilter, setClaimFilter] = useState('all');
     const [claimedAirdrops, setClaimedAirdrops] = useState(new Set());
 
-    const bgColor = useColorModeValue('white', 'gray.800');
-    const borderColor = useColorModeValue('gray.200', 'gray.600');
+    const isCockpit = variant === 'cockpit';
+    const defaultBgColor = useColorModeValue('white', 'gray.800');
+    const defaultBorderColor = useColorModeValue('gray.200', 'gray.600');
+    const bgColor = isCockpit ? '#10171b' : defaultBgColor;
+    const panelBgColor = isCockpit ? '#0b1114' : bgColor;
+    const borderColor = isCockpit ? 'rgba(255,255,255,0.16)' : defaultBorderColor;
+    const mutedText = isCockpit ? 'whiteAlpha.600' : 'gray.400';
+    const bodyText = isCockpit ? 'whiteAlpha.800' : 'gray.300';
 
     // Load claimed airdrops from localStorage on component mount
     useEffect(() => {
@@ -131,23 +137,23 @@ const NewsAirdrops = () => {
     };
 
     return (
-        <Box p={6}>
+        <Box p={isCockpit ? { base: 3, md: 4 } : 6}>
             <VStack spacing={6} align="stretch">
 
 
                 {/* Filters */}
-                <Box bg={bgColor} p={3} borderRadius="md" border="1px" borderColor={borderColor}>
+                <Box bg={panelBgColor} p={3} borderRadius="8px" border="1px" borderColor={borderColor}>
                     <Text fontWeight="bold" mb={2} fontSize="sm" color="white">Filter Airdrops</Text>
                     <Stack direction={{ base: 'column', md: 'row' }} spacing={3}>
                         <Box minW="120px">
-                            <Text fontSize="xs" mb={1} color="gray.300">Type</Text>
+                            <Text fontSize="xs" mb={1} color={bodyText}>Type</Text>
                             <Select 
                                 size="sm"
                                 value={typeFilter} 
                                 onChange={(e) => setTypeFilter(e.target.value)}
-                                bg="gray.700"
+                                bg={isCockpit ? '#10171b' : 'gray.700'}
                                 color="white"
-                                borderColor="gray.600"
+                                borderColor={borderColor}
                             >
                                 <option value="all">All Types</option>
                                 <option value="ingredient">Ingredients</option>
@@ -157,14 +163,14 @@ const NewsAirdrops = () => {
                             </Select>
                         </Box>
                         <Box minW="120px">
-                            <Text fontSize="xs" mb={1} color="gray.300">Chain</Text>
+                            <Text fontSize="xs" mb={1} color={bodyText}>Chain</Text>
                             <Select 
                                 size="sm"
                                 value={chainFilter} 
                                 onChange={(e) => setChainFilter(e.target.value)}
-                                bg="gray.700"
+                                bg={isCockpit ? '#10171b' : 'gray.700'}
                                 color="white"
-                                borderColor="gray.600"
+                                borderColor={borderColor}
                             >
                                 <option value="all">All Chains</option>
                                 <option value="Ardor">Ardor</option>
@@ -172,14 +178,14 @@ const NewsAirdrops = () => {
                             </Select>
                         </Box>
                         <Box minW="120px">
-                            <Text fontSize="xs" mb={1} color="gray.300">Status</Text>
+                            <Text fontSize="xs" mb={1} color={bodyText}>Status</Text>
                             <Select 
                                 size="sm"
                                 value={statusFilter} 
                                 onChange={(e) => setStatusFilter(e.target.value)}
-                                bg="gray.700"
+                                bg={isCockpit ? '#10171b' : 'gray.700'}
                                 color="white"
-                                borderColor="gray.600"
+                                borderColor={borderColor}
                             >
                                 <option value="all">All Status</option>
                                 <option value="active">Active</option>
@@ -187,14 +193,14 @@ const NewsAirdrops = () => {
                             </Select>
                         </Box>
                         <Box minW="120px">
-                            <Text fontSize="xs" mb={1} color="gray.300">Claimed</Text>
+                            <Text fontSize="xs" mb={1} color={bodyText}>Claimed</Text>
                             <Select 
                                 size="sm"
                                 value={claimFilter} 
                                 onChange={(e) => setClaimFilter(e.target.value)}
-                                bg="gray.700"
+                                bg={isCockpit ? '#10171b' : 'gray.700'}
                                 color="white"
-                                borderColor="gray.600"
+                                borderColor={borderColor}
                             >
                                 <option value="all">All</option>
                                 <option value="claimed">Claimed</option>
@@ -205,7 +211,7 @@ const NewsAirdrops = () => {
                 </Box>
 
                 {/* Results count */}
-                <Text color="gray.400" fontSize="sm">
+                <Text color={mutedText} fontSize="sm">
                     Showing {filteredAirdrops.length} of {airdrops.length} airdrops
                 </Text>
 
@@ -216,11 +222,11 @@ const NewsAirdrops = () => {
                             <Box 
                                 bg={bgColor} 
                                 p={5} 
-                                borderRadius="lg" 
+                                borderRadius="8px"
                                 border="1px" 
                                 borderColor={borderColor}
                                 transition="all 0.2s"
-                                _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
+                                _hover={{ borderColor: isCockpit ? 'rgba(87, 214, 141, 0.48)' : borderColor }}
                             >
                                 <VStack spacing={3} align="stretch">
                                     <HStack justify="space-between" align="start">
@@ -256,9 +262,9 @@ const NewsAirdrops = () => {
                                             colorScheme="teal"
                                             size="md"
                                         >
-                                            <Text fontSize="xs" color="gray.400" ml={1}>
-                                                Claimed
-                                            </Text>
+                                                <Text fontSize="xs" color={mutedText} ml={1}>
+                                                    Claimed
+                                                </Text>
                                         </Checkbox>
                                     </HStack>
                                         
@@ -267,7 +273,7 @@ const NewsAirdrops = () => {
                                             {airdrop.name}
                                         </Heading>
                                         
-                                        <Text fontSize="sm" color="gray.300" noOfLines={3}>
+                                        <Text fontSize="sm" color={bodyText} noOfLines={3}>
                                             {airdrop.description}
                                         </Text>
                                     </VStack>
@@ -276,11 +282,11 @@ const NewsAirdrops = () => {
 
                                     <VStack spacing={2} align="stretch" fontSize="xs">
                                         <HStack justify="space-between">
-                                            <Text color="gray.400">Requirement:</Text>
+                                            <Text color={mutedText}>Requirement:</Text>
                                             <Text color="gray.200" textAlign="right">{airdrop.requirement}</Text>
                                         </HStack>
                                         <HStack justify="space-between">
-                                            <Text color="gray.400">Method:</Text>
+                                            <Text color={mutedText}>Method:</Text>
                                             <Text color="gray.200" textAlign="right">{airdrop.method}</Text>
                                         </HStack>
                                     </VStack>
@@ -288,9 +294,11 @@ const NewsAirdrops = () => {
                                     {airdrop.active && (
                                         <Button 
                                             size="sm" 
-                                            colorScheme="teal" 
+                                            colorScheme={isCockpit ? 'green' : 'teal'}
                                             variant="outline"
-                                            _hover={{ bg: 'teal.500', color: 'white' }}
+                                            borderColor={isCockpit ? 'rgba(87, 214, 141, 0.48)' : undefined}
+                                            color={isCockpit ? '#57d68d' : undefined}
+                                            _hover={{ bg: isCockpit ? 'rgba(87, 214, 141, 0.12)' : 'teal.500', color: isCockpit ? '#57d68d' : 'white' }}
                                         >
                                             Learn More
                                         </Button>
@@ -303,11 +311,11 @@ const NewsAirdrops = () => {
 
                 {filteredAirdrops.length === 0 && (
                     <Box textAlign="center" py={8}>
-                        <Text color="gray.400">No airdrops match your current filters.</Text>
+                        <Text color={mutedText}>No airdrops match your current filters.</Text>
                         <Button 
                             mt={4} 
                             variant="outline" 
-                            colorScheme="teal"
+                            colorScheme={isCockpit ? 'green' : 'teal'}
                             onClick={() => {
                                 setTypeFilter('all');
                                 setChainFilter('all');

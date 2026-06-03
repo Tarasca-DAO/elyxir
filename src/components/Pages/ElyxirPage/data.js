@@ -295,38 +295,50 @@ export const rawPotions = [
     {
         name: 'Whispering Gale Potion',
         description: 'Harnesses the power of wind and storms',
-        image: 'whispering_gale.png',
+        image: 'PotionWhisperingGale.png',
         key: 'whispering_gale',
     },
     {
         name: 'Tideheart Potion',
         description: 'Contains the essence of ocean tides',
-        image: 'tideheart.png',
+        image: 'PotionTideheart.png',
         key: 'tideheart',
     },
     {
         name: 'Stoneblood Potion',
         description: 'Infused with the strength of mountains',
-        image: 'stoneblood.png',
+        image: 'PotionStoneblood .png',
         key: 'stoneblood',
     },
     {
         name: 'Eternal Silk Potion',
         description: 'Woven with ancient Asian wisdom',
-        image: 'eternal_silk.png',
+        image: 'PotionofheEternalSilk.png',
         key: 'eternal_silk',
     },
     {
         name: 'Coral Spirits Potion',
         description: 'Blessed by oceanic guardians',
-        image: 'coral_spirits.png',
+        image: 'PotionCoral.png',
         key: 'coral_spirits',
     },
     {
         name: 'Feathered Flame Potion',
         description: 'Burns with the spirit of the Americas',
-        image: 'feathered_flame.png',
+        image: 'PotionoftheFeatheredFlame.png',
         key: 'feathered_flame',
+    },
+    {
+        name: 'Shifting Dunes Potion',
+        description: 'Distilled from desert mirage and mineral heat',
+        image: 'Potion of the Shifting Dunes.png',
+        key: 'shifting_dunes',
+    },
+    {
+        name: 'Forgotten Grove Potion',
+        description: 'Carries the memory of old roots and living bark',
+        image: 'PotionoftheForgottenGrove.png',
+        key: 'forgotten_grove',
     },
 ];
 
